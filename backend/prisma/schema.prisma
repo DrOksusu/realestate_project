@@ -1,0 +1,254 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 소유주 (사용자)
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  properties Property[]
+
+  @@map("users")
+}
+
+// 부동산 물건
+model Property {
+  id              Int          @id @default(autoincrement())
+  ownerId         Int
+  owner           User         @relation(fields: [ownerId], references: [id])
+
+  // 기본 정보
+  name            String       // 물건 별칭 (예: "강남 오피스텔 1호")
+  propertyType    PropertyType // 물건 유형
+  address         String       // 주소
+  addressDetail   String?      // 상세주소
+  area            Decimal      @db.Decimal(10, 2) // 면적 (㎡)
+
+  // 매입 정보
+  purchasePrice   Decimal      @db.Decimal(15, 0) // 매입가
+  purchaseDate    DateTime     // 매입일
+  acquisitionCost Decimal      @db.Decimal(15, 0) @default(0) // 취득 부대비용 (취득세, 중개수수료 등)
+
+  // 대출 정보
+  loanAmount      Decimal      @db.Decimal(15, 0) @default(0) // 대출금액
+  loanInterestRate Decimal     @db.Decimal(5, 2) @default(0)  // 대출 이자율 (%)
+
+  // 현재 상태
+  status          PropertyStatus @default(VACANT)
+  currentValue    Decimal?     @db.Decimal(15, 0) // 현재 시세 (수동 입력)
+
+  memo            String?      @db.Text
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  leases          Lease[]
+  expenses        Expense[]
+  valuations      PropertyValuation[]
+
+  @@map("properties")
+}
+
+// 물건 유형
+enum PropertyType {
+  APARTMENT       // 아파트
+  OFFICETEL       // 오피스텔
+  VILLA           // 빌라/다세대
+  STUDIO          // 원룸
+  COMMERCIAL      // 상가
+  OFFICE          // 사무실
+  BUILDING        // 건물
+  LAND            // 토지
+  OTHER           // 기타
+}
+
+// 물건 상태
+enum PropertyStatus {
+  OCCUPIED        // 임대중
+  VACANT          // 공실
+  MAINTENANCE     // 수리중
+  FOR_SALE        // 매도중
+}
+
+// 임차인
+model Tenant {
+  id          Int      @id @default(autoincrement())
+  name        String   // 임차인 이름
+  phone       String?  // 연락처
+  email       String?
+  idNumber    String?  // 주민등록번호 (암호화 필요)
+  memo        String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  leases      Lease[]
+
+  @@map("tenants")
+}
+
+// 임대 계약
+model Lease {
+  id              Int         @id @default(autoincrement())
+  propertyId      Int
+  property        Property    @relation(fields: [propertyId], references: [id])
+  tenantId        Int
+  tenant          Tenant      @relation(fields: [tenantId], references: [id])
+
+  // 계약 정보
+  leaseType       LeaseType   // 전세/월세
+  deposit         Decimal     @db.Decimal(15, 0) // 보증금
+  monthlyRent     Decimal     @db.Decimal(10, 0) @default(0) // 월세
+  managementFee   Decimal     @db.Decimal(10, 0) @default(0) // 관리비 (임차인 부담)
+
+  // 계약 기간
+  startDate       DateTime    // 계약 시작일
+  endDate         DateTime    // 계약 종료일
+  rentDueDay      Int         @default(1) // 월세 납부일 (매월 n일)
+
+  // 상태
+  status          LeaseStatus @default(ACTIVE)
+
+  memo            String?     @db.Text
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  rentPayments    RentPayment[]
+
+  @@map("leases")
+}
+
+// 임대 유형
+enum LeaseType {
+  JEONSE          // 전세
+  MONTHLY         // 월세
+  HALF_JEONSE     // 반전세
+}
+
+// 계약 상태
+enum LeaseStatus {
+  ACTIVE          // 계약중
+  EXPIRED         // 만료
+  TERMINATED      // 해지
+  PENDING         // 계약 예정
+}
+
+// 월세 납부 내역
+model RentPayment {
+  id                  Int           @id @default(autoincrement())
+  leaseId             Int
+  lease               Lease         @relation(fields: [leaseId], references: [id])
+
+  // 납부 기간
+  paymentYear         Int           // 납부 년도
+  paymentMonth        Int           // 납부 월 (1-12)
+  dueDate             DateTime      // 납부 예정일
+  paymentDate         DateTime?     // 실제 납부일
+
+  // 금액 상세
+  rentAmount          Decimal       @db.Decimal(10, 0) // 월세
+  managementFeeAmount Decimal       @db.Decimal(10, 0) @default(0) // 관리비
+  totalAmount         Decimal       @db.Decimal(10, 0) // 총 납부금액 (월세 + 관리비)
+
+  // 납부 정보
+  paymentMethod       PaymentMethod @default(TRANSFER) // 납부 방법
+  rentStatus          PaymentStatus @default(PENDING)  // 월세 납부 상태
+  managementFeeStatus PaymentStatus @default(PENDING)  // 관리비 납부 상태
+
+  memo                String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@unique([leaseId, paymentYear, paymentMonth]) // 계약별 월별 중복 방지
+  @@map("rent_payments")
+}
+
+enum PaymentMethod {
+  TRANSFER        // 계좌이체
+  CASH            // 현금
+  CARD            // 카드
+  AUTO_TRANSFER   // 자동이체
+}
+
+enum PaymentStatus {
+  PAID            // 납부완료
+  PENDING         // 미납
+  PARTIAL         // 부분납부
+  OVERDUE         // 연체
+}
+
+// 지출/비용 (소유주 부담)
+model Expense {
+  id            Int          @id @default(autoincrement())
+  propertyId    Int
+  property      Property     @relation(fields: [propertyId], references: [id])
+
+  expenseType   ExpenseType  // 비용 유형
+  amount        Decimal      @db.Decimal(10, 0) // 금액
+  expenseDate   DateTime     // 지출일
+  description   String?      // 설명
+
+  isRecurring   Boolean      @default(false) // 정기 지출 여부
+  recurringMonth Int?        // 정기 지출인 경우 해당 월 (1-12)
+
+  memo          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("expenses")
+}
+
+// 비용 유형
+enum ExpenseType {
+  PROPERTY_TAX      // 재산세
+  INCOME_TAX        // 종합소득세 (임대소득)
+  MAINTENANCE       // 수선/유지비
+  INSURANCE         // 보험료
+  MANAGEMENT_FEE    // 관리비 (소유주 부담분)
+  LOAN_INTEREST     // 대출이자
+  VACANCY_COST      // 공실 비용
+  AGENT_FEE         // 중개수수료
+  OTHER             // 기타
+}
+
+// 매도가 시뮬레이션 (수익률 기반)
+model PropertyValuation {
+  id              Int      @id @default(autoincrement())
+  propertyId      Int
+  property        Property @relation(fields: [propertyId], references: [id])
+
+  // 수익률 계산 기준
+  annualRent      Decimal  @db.Decimal(15, 0) // 연간 임대 수입
+  totalDeposit    Decimal  @db.Decimal(15, 0) @default(0) // 총 보증금
+  annualExpense   Decimal  @db.Decimal(15, 0) // 연간 지출
+  netIncome       Decimal  @db.Decimal(15, 0) // 연간 순수익
+
+  // 투자금 (자기자본)
+  totalInvestment Decimal  @db.Decimal(15, 0) // 총 투자금 (매입가 + 부대비용 - 대출금 - 보증금)
+
+  // 수익률
+  grossYield      Decimal  @db.Decimal(5, 2)  // 총 수익률 (%)
+  netYield        Decimal  @db.Decimal(5, 2)  // 순 수익률 (%)
+  cashOnCash      Decimal  @db.Decimal(5, 2)  // 현금수익률 (%) - 자기자본 대비
+
+  // 목표 수익률에 따른 매도가
+  targetYield     Decimal  @db.Decimal(5, 2)  // 목표 수익률 (%)
+  suggestedPrice  Decimal  @db.Decimal(15, 0) // 제안 매도가
+
+  // 예상 매도 시 수익
+  expectedProfit  Decimal  @db.Decimal(15, 0) // 예상 매매차익
+
+  memo            String?  @db.Text
+  calculatedAt    DateTime @default(now())    // 계산 시점
+
+  @@map("property_valuations")
+}
