@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Layout from '@/components/Layout';
 import Card from '@/components/ui/Card';
@@ -19,7 +19,7 @@ interface ValuationForm {
   memo: string;
 }
 
-export default function ValuationsPage() {
+function ValuationsContent() {
   const searchParams = useSearchParams();
   const [valuations, setValuations] = useState<PropertyValuation[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -358,5 +358,19 @@ export default function ValuationsPage() {
         )}
       </Modal>
     </Layout>
+  );
+}
+
+export default function ValuationsPage() {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+      </Layout>
+    }>
+      <ValuationsContent />
+    </Suspense>
   );
 }

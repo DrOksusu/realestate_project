@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
@@ -10,7 +10,7 @@ import { rentPaymentApi } from '@/lib/api';
 import { RentPayment } from '@/types';
 import { formatCurrency, formatDate, paymentStatusLabels, paymentStatusColors } from '@/lib/utils';
 
-export default function PaymentsPage() {
+function PaymentsContent() {
   const searchParams = useSearchParams();
   const [payments, setPayments] = useState<RentPayment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -179,5 +179,19 @@ export default function PaymentsPage() {
         )}
       </div>
     </Layout>
+  );
+}
+
+export default function PaymentsPage() {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+      </Layout>
+    }>
+      <PaymentsContent />
+    </Suspense>
   );
 }
