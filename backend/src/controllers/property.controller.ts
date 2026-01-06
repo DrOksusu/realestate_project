@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { PropertyType, PropertyStatus } from '@prisma/client';
+import crypto from 'crypto';
 
 // 내 부동산 목록 조회
 export const getProperties = async (req: Request, res: Response): Promise<void> => {
@@ -301,5 +302,105 @@ export const getPropertySummary = async (req: Request, res: Response): Promise<v
   } catch (error) {
     console.error('GetPropertySummary error:', error);
     res.status(500).json({ error: '부동산 요약 조회 중 오류가 발생했습니다.' });
+  }
+};
+
+// 공유 링크 생성
+export const createShareLink = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const propertyId = parseInt(req.params.id);
+    const { expiresIn } = req.body; // 만료 기간 (일 단위, null이면 무제한)
+
+    // 소유권 확인
+    const property = await prisma.property.findFirst({
+      where: { id: propertyId, ownerId: userId },
+    });
+
+    if (!property) {
+      res.status(404).json({ error: '부동산을 찾을 수 없습니다.' });
+      return;
+    }
+
+    // 토큰 생성 (URL-safe base64)
+    const shareToken = crypto.randomBytes(16).toString('base64url');
+
+    // 만료일 계산
+    let shareExpiresAt = null;
+    if (expiresIn) {
+      shareExpiresAt = new Date();
+      shareExpiresAt.setDate(shareExpiresAt.getDate() + expiresIn);
+    }
+
+    // 업데이트
+    await prisma.property.update({
+      where: { id: propertyId },
+      data: { shareToken, shareExpiresAt },
+    });
+
+    res.json({
+      shareToken,
+      shareExpiresAt,
+      message: '공유 링크가 생성되었습니다.',
+    });
+  } catch (error) {
+    console.error('CreateShareLink error:', error);
+    res.status(500).json({ error: '공유 링크 생성 중 오류가 발생했습니다.' });
+  }
+};
+
+// 공유 링크 해제
+export const revokeShareLink = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const propertyId = parseInt(req.params.id);
+
+    // 소유권 확인
+    const property = await prisma.property.findFirst({
+      where: { id: propertyId, ownerId: userId },
+    });
+
+    if (!property) {
+      res.status(404).json({ error: '부동산을 찾을 수 없습니다.' });
+      return;
+    }
+
+    // 공유 해제
+    await prisma.property.update({
+      where: { id: propertyId },
+      data: { shareToken: null, shareExpiresAt: null },
+    });
+
+    res.json({ message: '공유가 해제되었습니다.' });
+  } catch (error) {
+    console.error('RevokeShareLink error:', error);
+    res.status(500).json({ error: '공유 해제 중 오류가 발생했습니다.' });
+  }
+};
+
+// 공유 상태 확인
+export const getShareStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const propertyId = parseInt(req.params.id);
+
+    const property = await prisma.property.findFirst({
+      where: { id: propertyId, ownerId: userId },
+      select: { shareToken: true, shareExpiresAt: true },
+    });
+
+    if (!property) {
+      res.status(404).json({ error: '부동산을 찾을 수 없습니다.' });
+      return;
+    }
+
+    res.json({
+      isShared: !!property.shareToken,
+      shareToken: property.shareToken,
+      shareExpiresAt: property.shareExpiresAt,
+    });
+  } catch (error) {
+    console.error('GetShareStatus error:', error);
+    res.status(500).json({ error: '공유 상태 조회 중 오류가 발생했습니다.' });
   }
 };

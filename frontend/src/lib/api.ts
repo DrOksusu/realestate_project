@@ -12,7 +12,8 @@ const api = axios.create({
 // Request interceptor - 토큰 추가
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
+    // localStorage 먼저 확인, 없으면 sessionStorage 확인
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,6 +29,9 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('rememberMe');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         window.location.href = '/login';
       }
     }
@@ -57,6 +61,11 @@ export const propertyApi = {
   update: (id: number, data: Partial<any>) => api.put(`/properties/${id}`, data),
   delete: (id: number) => api.delete(`/properties/${id}`),
   getSummary: (id: number) => api.get(`/properties/${id}/summary`),
+  // 공유 관련
+  getShareStatus: (id: number) => api.get(`/properties/${id}/share`),
+  createShareLink: (id: number, expiresIn?: number) =>
+    api.post(`/properties/${id}/share`, { expiresIn }),
+  revokeShareLink: (id: number) => api.delete(`/properties/${id}/share`),
 };
 
 // Tenant API
@@ -117,4 +126,9 @@ export const valuationApi = {
   getOne: (id: number) => api.get(`/valuations/${id}`),
   delete: (id: number) => api.delete(`/valuations/${id}`),
   getPortfolioSummary: () => api.get('/valuations/portfolio/summary'),
+};
+
+// Share API (공개 - 인증 불필요)
+export const shareApi = {
+  getSharedProperty: (token: string) => api.get(`/share/${token}`),
 };

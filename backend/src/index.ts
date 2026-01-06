@@ -10,6 +10,7 @@ import leaseRoutes from './routes/lease.routes';
 import rentPaymentRoutes from './routes/rentPayment.routes';
 import expenseRoutes from './routes/expense.routes';
 import valuationRoutes from './routes/valuation.routes';
+import shareRoutes from './routes/share.routes';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use('/api/leases', leaseRoutes);
 app.use('/api/rent-payments', rentPaymentRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/valuations', valuationRoutes);
+app.use('/api/share', shareRoutes);
 
 // API info
 app.get('/api', (req: Request, res: Response) => {

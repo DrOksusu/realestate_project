@@ -25,4 +25,9 @@ router.delete('/:id', propertyController.deleteProperty);
 // 부동산 요약 통계
 router.get('/:id/summary', propertyController.getPropertySummary);
 
+// 공유 관련
+router.get('/:id/share', propertyController.getShareStatus);
+router.post('/:id/share', propertyController.createShareLink);
+router.delete('/:id/share', propertyController.revokeShareLink);
+
 export default router;

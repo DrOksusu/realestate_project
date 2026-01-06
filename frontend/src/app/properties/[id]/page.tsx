@@ -29,11 +29,16 @@ export default function PropertyDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const propertyId = Number(params.id);
 
   useEffect(() => {
     loadProperty();
+    loadShareStatus();
   }, [propertyId]);
 
   const loadProperty = async () => {
@@ -44,6 +49,55 @@ export default function PropertyDetailPage() {
       console.error('Failed to load property:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadShareStatus = async () => {
+    try {
+      const response = await propertyApi.getShareStatus(propertyId);
+      setShareToken(response.data.shareToken);
+    } catch (error) {
+      console.error('Failed to load share status:', error);
+    }
+  };
+
+  const handleCreateShareLink = async () => {
+    setIsSharing(true);
+    try {
+      const response = await propertyApi.createShareLink(propertyId);
+      setShareToken(response.data.shareToken);
+    } catch (error) {
+      console.error('Failed to create share link:', error);
+      alert('공유 링크 생성에 실패했습니다.');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleRevokeShareLink = async () => {
+    try {
+      await propertyApi.revokeShareLink(propertyId);
+      setShareToken(null);
+    } catch (error) {
+      console.error('Failed to revoke share link:', error);
+      alert('공유 해제에 실패했습니다.');
+    }
+  };
+
+  const getShareUrl = () => {
+    if (typeof window !== 'undefined' && shareToken) {
+      return `${window.location.origin}/share/${shareToken}`;
+    }
+    return '';
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getShareUrl());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
     }
   };
 
@@ -98,6 +152,9 @@ export default function PropertyDetailPage() {
             <p className="text-gray-500 mt-1">{property.address}</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setShowShareModal(true)}>
+              공유
+            </Button>
             <Link href={`/properties/${propertyId}/edit`}>
               <Button variant="secondary">수정</Button>
             </Link>
@@ -316,6 +373,52 @@ export default function PropertyDetailPage() {
               삭제
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* 공유 모달 */}
+      <Modal isOpen={showShareModal} onClose={() => setShowShareModal(false)} title="페이지 공유">
+        <div className="space-y-4">
+          {shareToken ? (
+            <>
+              <p className="text-gray-600">
+                아래 링크를 통해 이 매물 정보와 수익률 분석을 공유할 수 있습니다.
+                <br />
+                <span className="text-sm text-gray-500">(로그인 없이 읽기 전용으로 열람 가능)</span>
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={getShareUrl()}
+                  className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-sm"
+                />
+                <Button onClick={handleCopyLink}>
+                  {copied ? '복사됨!' : '복사'}
+                </Button>
+              </div>
+              <Button
+                variant="danger"
+                className="w-full"
+                onClick={handleRevokeShareLink}
+              >
+                공유 해제
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-600">
+                공유 링크를 생성하면 로그인 없이 매물 정보와 수익률 분석을 열람할 수 있습니다.
+              </p>
+              <Button
+                className="w-full"
+                onClick={handleCreateShareLink}
+                isLoading={isSharing}
+              >
+                공유 링크 생성
+              </Button>
+            </>
+          )}
         </div>
       </Modal>
     </Layout>

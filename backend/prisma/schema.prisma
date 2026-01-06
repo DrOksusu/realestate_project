@@ -52,6 +52,10 @@ model Property {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
+  // 공유 기능
+  shareToken      String?      @unique // 공유 링크용 토큰
+  shareExpiresAt  DateTime?    // 공유 만료일 (null이면 무제한)
+
   leases          Lease[]
   expenses        Expense[]
   valuations      PropertyValuation[]
