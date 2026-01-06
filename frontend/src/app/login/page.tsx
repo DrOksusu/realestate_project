@@ -19,6 +19,7 @@ export default function LoginPage() {
   const { setAuth } = useAuthStore();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>();
 
@@ -28,7 +29,7 @@ export default function LoginPage() {
 
     try {
       const response = await authApi.login(data);
-      setAuth(response.data.user, response.data.token);
+      setAuth(response.data.user, response.data.token, rememberMe);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error || '로그인에 실패했습니다.');
@@ -80,6 +81,16 @@ export default function LoginPage() {
               })}
               error={errors.password?.message}
             />
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600">로그인 유지</span>
+            </label>
 
             <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
               로그인
