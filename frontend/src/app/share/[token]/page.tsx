@@ -11,6 +11,7 @@ import {
   propertyStatusLabels,
   leaseTypeLabels,
 } from '@/lib/utils';
+import Tooltip from '@/components/ui/Tooltip';
 
 interface SharedProperty {
   id: number;
@@ -217,24 +218,45 @@ export default function SharedPropertyPage() {
 
             {/* 수익률 */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-blue-50 rounded-lg text-center">
-                <div className="text-sm text-gray-500">총 수익률</div>
-                <div className="font-bold text-2xl text-blue-600">
-                  {latestValuation.grossYield}%
+              <Tooltip content="연간 임대료 ÷ 매입가 × 100" position="bottom">
+                <div className="p-4 bg-blue-50 rounded-lg text-center cursor-help">
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    총 수익률
+                    <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="font-bold text-2xl text-blue-600">
+                    {latestValuation.grossYield}%
+                  </div>
                 </div>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg text-center">
-                <div className="text-sm text-gray-500">순 수익률</div>
-                <div className="font-bold text-2xl text-green-600">
-                  {latestValuation.netYield}%
+              </Tooltip>
+              <Tooltip content="(연간 임대료 - 지출 - 대출이자) ÷ 매입가 × 100" position="bottom">
+                <div className="p-4 bg-green-50 rounded-lg text-center cursor-help">
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    순 수익률
+                    <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="font-bold text-2xl text-green-600">
+                    {latestValuation.netYield}%
+                  </div>
                 </div>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg text-center">
-                <div className="text-sm text-gray-500">현금수익률</div>
-                <div className="font-bold text-2xl text-purple-600">
-                  {latestValuation.cashOnCash}%
+              </Tooltip>
+              <Tooltip content={<div className="text-left"><div>순수익 ÷ 자기자본 × 100</div><div className="text-xs mt-1 text-gray-300">자기자본 = 매입가 + 취득비용 - 대출 - 보증금</div></div>} position="bottom">
+                <div className="p-4 bg-purple-50 rounded-lg text-center cursor-help">
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    현금수익률
+                    <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="font-bold text-2xl text-purple-600">
+                    {latestValuation.cashOnCash}%
+                  </div>
                 </div>
-              </div>
+              </Tooltip>
             </div>
 
             {/* 매도가 산출 */}
