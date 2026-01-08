@@ -324,6 +324,11 @@ export default function PropertyDetailPage() {
                           ? `보증금 ${formatCurrencyMan(lease.deposit)}`
                           : `${formatCurrencyMan(lease.deposit)} / ${formatCurrency(lease.monthlyRent)}`}
                       </div>
+                      {Number(lease.managementFee) > 0 && (
+                        <div className="text-sm text-gray-500">
+                          관리비 {formatCurrency(lease.managementFee)}
+                        </div>
+                      )}
                       <Badge variant={lease.status === 'ACTIVE' ? 'success' : 'default'}>
                         {leaseStatusLabels[lease.status]}
                       </Badge>
