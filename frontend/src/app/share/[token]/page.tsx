@@ -197,7 +197,7 @@ export default function SharedPropertyPage() {
                       </div>
                       {Number(lease.managementFee) > 0 && (
                         <div className="text-sm text-gray-500">
-                          관리비 {formatCurrency(lease.managementFee)}
+                          관리비 별도 {formatCurrency(lease.managementFee)}
                         </div>
                       )}
                     </div>
