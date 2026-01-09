@@ -19,6 +19,7 @@ interface LeaseForm {
   deposit: number;
   monthlyRent: number;
   managementFee: number;
+  hasVat: boolean;
   startDate: string;
   endDate: string;
   rentDueDay: number;
@@ -41,6 +42,7 @@ function NewLeaseContent() {
       leaseType: 'MONTHLY',
       monthlyRent: 0,
       managementFee: 0,
+      hasVat: false,
       rentDueDay: 1,
     },
   });
@@ -76,6 +78,7 @@ function NewLeaseContent() {
         deposit: Number(data.deposit),
         monthlyRent: Number(data.monthlyRent) || 0,
         managementFee: Number(data.managementFee) || 0,
+        hasVat: data.hasVat || false,
         rentDueDay: Number(data.rentDueDay) || 1,
       });
       router.push('/leases');
@@ -162,6 +165,15 @@ function NewLeaseContent() {
                     placeholder="관리비"
                     {...register('managementFee')}
                   />
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      {...register('hasVat')}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">부가세 별도 (상가/사무실)</span>
+                  </label>
 
                   <Input
                     label="납부일 (매월)"

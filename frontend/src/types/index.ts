@@ -71,6 +71,7 @@ export interface Lease {
   deposit: number;
   monthlyRent: number;
   managementFee: number;
+  hasVat: boolean;
   startDate: string;
   endDate: string;
   rentDueDay: number;

@@ -113,6 +113,7 @@ model Lease {
   deposit         Decimal     @db.Decimal(15, 0) // 보증금
   monthlyRent     Decimal     @db.Decimal(10, 0) @default(0) // 월세
   managementFee   Decimal     @db.Decimal(10, 0) @default(0) // 관리비 (임차인 부담)
+  hasVat          Boolean     @default(false) // 부가세 포함 여부 (상가/사무실)
 
   // 계약 기간
   startDate       DateTime    // 계약 시작일

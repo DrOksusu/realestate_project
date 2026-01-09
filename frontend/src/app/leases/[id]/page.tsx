@@ -147,6 +147,14 @@ export default function LeaseDetailPage() {
                   <div className="text-sm text-gray-500">관리비</div>
                   <div className="font-medium">{formatCurrency(lease.managementFee)}</div>
                 </div>
+                {lease.hasVat && (
+                  <div>
+                    <div className="text-sm text-gray-500">부가세 (10%)</div>
+                    <div className="font-medium text-orange-600">
+                      {formatCurrency(Number(lease.monthlyRent) * 0.1)}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <div className="text-sm text-gray-500">납부일</div>
                   <div className="font-medium">매월 {lease.rentDueDay}일</div>
@@ -212,7 +220,14 @@ export default function LeaseDetailPage() {
         )}
 
         {/* 임차인 정보 */}
-        <Card title="임차인 정보">
+        <Card
+          title="임차인 정보"
+          action={
+            <Link href="/tenants">
+              <Button size="sm" variant="ghost">수정</Button>
+            </Link>
+          }
+        >
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-500">이름</span>
