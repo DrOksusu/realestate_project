@@ -30,6 +30,7 @@ interface SharedProperty {
     deposit: string;
     monthlyRent: string;
     managementFee: string;
+    hasVat: boolean;
     startDate: string;
     endDate: string;
     status: string;
@@ -180,30 +181,58 @@ export default function SharedPropertyPage() {
             </div>
 
             <div className="space-y-2">
-              {activeLeases.map((lease) => (
-                <div key={lease.id} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{lease.tenant.name}</div>
-                      <div className="text-sm text-gray-500">
-                        {leaseTypeLabels[lease.leaseType as keyof typeof leaseTypeLabels]} · {formatDate(lease.startDate)} ~ {formatDate(lease.endDate)}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {lease.leaseType === 'JEONSE'
-                          ? `보증금 ${formatCurrencyMan(lease.deposit)}`
-                          : `${formatCurrencyMan(lease.deposit)} / ${formatCurrency(lease.monthlyRent)}`}
-                      </div>
-                      {Number(lease.managementFee) > 0 && (
+              {activeLeases.map((lease) => {
+                const monthlyRent = Number(lease.monthlyRent);
+                const managementFee = Number(lease.managementFee);
+                const vat = lease.hasVat ? Math.round((monthlyRent + managementFee) * 0.1) : 0;
+                const monthlyTotal = monthlyRent + managementFee + vat;
+
+                return (
+                  <div key={lease.id} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <div className="font-medium">{lease.tenant.name}</div>
                         <div className="text-sm text-gray-500">
-                          관리비 별도 {formatCurrency(lease.managementFee)}
+                          {leaseTypeLabels[lease.leaseType as keyof typeof leaseTypeLabels]} · {formatDate(lease.startDate)} ~ {formatDate(lease.endDate)}
                         </div>
-                      )}
+                      </div>
                     </div>
+
+                    {lease.leaseType === 'JEONSE' ? (
+                      <div className="text-right font-medium">
+                        보증금 {formatCurrencyMan(lease.deposit)}
+                      </div>
+                    ) : (
+                      <div className="mt-2 pt-2 border-t border-gray-200 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">보증금</span>
+                          <span>{formatCurrencyMan(lease.deposit)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">월세</span>
+                          <span>{formatCurrency(monthlyRent)}</span>
+                        </div>
+                        {managementFee > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">관리비 별도</span>
+                            <span>{formatCurrency(managementFee)}</span>
+                          </div>
+                        )}
+                        {lease.hasVat && (
+                          <div className="flex justify-between text-orange-600">
+                            <span>부가세 (10%)</span>
+                            <span>{formatCurrency(vat)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold pt-1 border-t border-gray-300">
+                          <span>월 합계</span>
+                          <span className="text-blue-600">{formatCurrency(monthlyTotal)}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

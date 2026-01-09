@@ -55,6 +55,7 @@ export const getSharedProperty = async (req: Request, res: Response): Promise<vo
         deposit: lease.deposit,
         monthlyRent: lease.monthlyRent,
         managementFee: lease.managementFee,
+        hasVat: lease.hasVat,
         startDate: lease.startDate,
         endDate: lease.endDate,
         status: lease.status,
