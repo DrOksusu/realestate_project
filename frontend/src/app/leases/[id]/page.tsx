@@ -117,6 +117,9 @@ export default function LeaseDetailPage() {
             <p className="text-gray-500 mt-1">임차인: {lease.tenant?.name}</p>
           </div>
           <div className="flex gap-2">
+            <Link href={`/leases/${leaseId}/edit`}>
+              <Button variant="secondary">수정</Button>
+            </Link>
             <Button variant="secondary" onClick={() => setShowStatusModal(true)}>
               상태변경
             </Button>
