@@ -307,7 +307,7 @@ export default function PropertyDetailPage() {
               {property.leases.map((lease) => {
                 const monthlyRent = Number(lease.monthlyRent);
                 const managementFee = Number(lease.managementFee);
-                const vat = lease.hasVat ? Math.round(monthlyRent * 0.1) : 0;
+                const vat = lease.hasVat ? Math.round((monthlyRent + managementFee) * 0.1) : 0;
                 const monthlyTotal = monthlyRent + managementFee + vat;
 
                 return (

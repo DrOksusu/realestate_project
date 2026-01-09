@@ -151,7 +151,7 @@ export default function LeaseDetailPage() {
                   <div>
                     <div className="text-sm text-gray-500">부가세 (10%)</div>
                     <div className="font-medium text-orange-600">
-                      {formatCurrency(Number(lease.monthlyRent) * 0.1)}
+                      {formatCurrency((Number(lease.monthlyRent) + Number(lease.managementFee)) * 0.1)}
                     </div>
                   </div>
                 )}
