@@ -303,39 +303,71 @@ export default function PropertyDetailPage() {
           }
         >
           {property.leases && property.leases.length > 0 ? (
-            <div className="space-y-3">
-              {property.leases.map((lease) => (
-                <Link
-                  key={lease.id}
-                  href={`/leases/${lease.id}`}
-                  className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{lease.tenant?.name}</div>
+            <div className="space-y-4">
+              {property.leases.map((lease) => {
+                const monthlyRent = Number(lease.monthlyRent);
+                const managementFee = Number(lease.managementFee);
+                const vat = lease.hasVat ? Math.round(monthlyRent * 0.1) : 0;
+                const monthlyTotal = monthlyRent + managementFee + vat;
+
+                return (
+                  <Link
+                    key={lease.id}
+                    href={`/leases/${lease.id}`}
+                    className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    {/* 헤더: 임차인명, 계약유형, 상태 */}
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-lg">{lease.tenant?.name}</span>
+                        <Badge variant={lease.status === 'ACTIVE' ? 'success' : 'default'}>
+                          {leaseStatusLabels[lease.status]}
+                        </Badge>
+                      </div>
                       <div className="text-sm text-gray-500">
-                        {leaseTypeLabels[lease.leaseType]} · {formatDate(lease.startDate)} ~{' '}
-                        {formatDate(lease.endDate)}
+                        {leaseTypeLabels[lease.leaseType]}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {lease.leaseType === 'JEONSE'
-                          ? `보증금 ${formatCurrencyMan(lease.deposit)}`
-                          : `${formatCurrencyMan(lease.deposit)} / ${formatCurrency(lease.monthlyRent)}`}
+
+                    {/* 금액 상세 */}
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">보증금</span>
+                        <span className="font-medium">{formatCurrencyMan(lease.deposit)}</span>
                       </div>
-                      {Number(lease.managementFee) > 0 && (
-                        <div className="text-sm text-gray-500">
-                          관리비 별도 {formatCurrency(lease.managementFee)}
-                        </div>
+                      {lease.leaseType !== 'JEONSE' && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">월세</span>
+                            <span className="font-medium">{formatCurrency(monthlyRent)}</span>
+                          </div>
+                          {managementFee > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">관리비</span>
+                              <span className="font-medium">{formatCurrency(managementFee)}</span>
+                            </div>
+                          )}
+                          {lease.hasVat && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">부가세 (10%)</span>
+                              <span className="font-medium text-orange-600">{formatCurrency(vat)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between pt-2 mt-2 border-t border-gray-200">
+                            <span className="font-semibold text-gray-700">월 합계</span>
+                            <span className="font-bold text-blue-600">{formatCurrency(monthlyTotal)}</span>
+                          </div>
+                        </>
                       )}
-                      <Badge variant={lease.status === 'ACTIVE' ? 'success' : 'default'}>
-                        {leaseStatusLabels[lease.status]}
-                      </Badge>
                     </div>
-                  </div>
-                </Link>
-              ))}
+
+                    {/* 계약 기간 */}
+                    <div className="mt-3 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                      계약기간: {formatDate(lease.startDate)} ~ {formatDate(lease.endDate)}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-4 text-gray-500">
