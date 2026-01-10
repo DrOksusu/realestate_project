@@ -51,6 +51,8 @@ export const getSharedProperty = async (req: Request, res: Response): Promise<vo
       currentValue: property.currentValue,
       leases: property.leases.map((lease) => ({
         id: lease.id,
+        floor: lease.floor,
+        areaPyeong: lease.areaPyeong,
         leaseType: lease.leaseType,
         deposit: lease.deposit,
         monthlyRent: lease.monthlyRent,

@@ -15,6 +15,8 @@ import { leaseTypeLabels } from '@/lib/utils';
 interface LeaseForm {
   propertyId: number;
   tenantId: number;
+  floor: string;
+  areaPyeong: number;
   leaseType: string;
   deposit: number;
   monthlyRent: number;
@@ -39,6 +41,8 @@ function NewLeaseContent() {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<LeaseForm>({
     defaultValues: {
       propertyId: defaultPropertyId ? Number(defaultPropertyId) : 0,
+      floor: '',
+      areaPyeong: 0,
       leaseType: 'MONTHLY',
       monthlyRent: 0,
       managementFee: 0,
@@ -75,6 +79,8 @@ function NewLeaseContent() {
         ...data,
         propertyId: Number(data.propertyId),
         tenantId: Number(data.tenantId),
+        floor: data.floor || null,
+        areaPyeong: Number(data.areaPyeong) || null,
         deposit: Number(data.deposit),
         monthlyRent: Number(data.monthlyRent) || 0,
         managementFee: Number(data.managementFee) || 0,
@@ -131,6 +137,21 @@ function NewLeaseContent() {
                 {...register('tenantId', { validate: (v) => v > 0 || '임차인을 선택하세요' })}
                 error={errors.tenantId?.message}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="층수"
+                  placeholder="예: 1층, B1, 2-3층"
+                  {...register('floor')}
+                />
+                <Input
+                  label="전용면적 (평)"
+                  type="number"
+                  step="0.01"
+                  placeholder="예: 10.5"
+                  {...register('areaPyeong')}
+                />
+              </div>
 
               <Select
                 label="계약 유형"

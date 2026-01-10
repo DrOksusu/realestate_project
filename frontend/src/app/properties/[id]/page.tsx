@@ -303,71 +303,70 @@ export default function PropertyDetailPage() {
           }
         >
           {property.leases && property.leases.length > 0 ? (
-            <div className="space-y-4">
-              {property.leases.map((lease) => {
-                const monthlyRent = Number(lease.monthlyRent);
-                const managementFee = Number(lease.managementFee);
-                const vat = lease.hasVat ? Math.round((monthlyRent + managementFee) * 0.1) : 0;
-                const monthlyTotal = monthlyRent + managementFee + vat;
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left">
+                    <th className="py-3 px-2 font-medium text-gray-500">층수</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">면적(평)</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">임차인</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">유형</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">보증금</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">월세</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">관리비</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">부가세</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">월 합계</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">계약기간</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">상태</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {property.leases.map((lease) => {
+                    const monthlyRent = Number(lease.monthlyRent);
+                    const managementFee = Number(lease.managementFee);
+                    const vat = lease.hasVat ? Math.round((monthlyRent + managementFee) * 0.1) : 0;
+                    const monthlyTotal = monthlyRent + managementFee + vat;
 
-                return (
-                  <Link
-                    key={lease.id}
-                    href={`/leases/${lease.id}`}
-                    className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    {/* 헤더: 임차인명, 계약유형, 상태 */}
-                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-lg">{lease.tenant?.name}</span>
-                        <Badge variant={lease.status === 'ACTIVE' ? 'success' : 'default'}>
-                          {leaseStatusLabels[lease.status]}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {leaseTypeLabels[lease.leaseType]}
-                      </div>
-                    </div>
-
-                    {/* 금액 상세 */}
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">보증금</span>
-                        <span className="font-medium">{formatCurrencyMan(lease.deposit)}</span>
-                      </div>
-                      {lease.leaseType !== 'JEONSE' && (
-                        <>
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">월세</span>
-                            <span className="font-medium">{formatCurrency(monthlyRent)}</span>
-                          </div>
-                          {managementFee > 0 && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">관리비</span>
-                              <span className="font-medium">{formatCurrency(managementFee)}</span>
-                            </div>
-                          )}
-                          {lease.hasVat && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-500">부가세 (10%)</span>
-                              <span className="font-medium text-orange-600">{formatCurrency(vat)}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between pt-2 mt-2 border-t border-gray-200">
-                            <span className="font-semibold text-gray-700">월 합계</span>
-                            <span className="font-bold text-blue-600">{formatCurrency(monthlyTotal)}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* 계약 기간 */}
-                    <div className="mt-3 pt-2 border-t border-gray-200 text-xs text-gray-500">
-                      계약기간: {formatDate(lease.startDate)} ~ {formatDate(lease.endDate)}
-                    </div>
-                  </Link>
-                );
-              })}
+                    return (
+                      <tr
+                        key={lease.id}
+                        className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => router.push(`/leases/${lease.id}`)}
+                      >
+                        <td className="py-3 px-2">{lease.floor || '-'}</td>
+                        <td className="py-3 px-2">{lease.areaPyeong ? `${lease.areaPyeong}평` : '-'}</td>
+                        <td className="py-3 px-2 font-medium">{lease.tenant?.name}</td>
+                        <td className="py-3 px-2">
+                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                            {leaseTypeLabels[lease.leaseType]}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-right">{formatCurrencyMan(lease.deposit)}</td>
+                        <td className="py-3 px-2 text-right">
+                          {lease.leaseType === 'JEONSE' ? '-' : formatCurrency(monthlyRent)}
+                        </td>
+                        <td className="py-3 px-2 text-right">
+                          {lease.leaseType === 'JEONSE' ? '-' : formatCurrency(managementFee)}
+                        </td>
+                        <td className="py-3 px-2 text-right text-orange-600">
+                          {lease.hasVat ? formatCurrency(vat) : '-'}
+                        </td>
+                        <td className="py-3 px-2 text-right font-bold text-blue-600">
+                          {lease.leaseType === 'JEONSE' ? '-' : formatCurrency(monthlyTotal)}
+                        </td>
+                        <td className="py-3 px-2 text-xs text-gray-500 whitespace-nowrap">
+                          {formatDate(lease.startDate).slice(2)} ~ {formatDate(lease.endDate).slice(2)}
+                        </td>
+                        <td className="py-3 px-2">
+                          <Badge variant={lease.status === 'ACTIVE' ? 'success' : 'default'}>
+                            {leaseStatusLabels[lease.status]}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
             <div className="text-center py-4 text-gray-500">

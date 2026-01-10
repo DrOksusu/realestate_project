@@ -67,6 +67,8 @@ export interface Lease {
   id: number;
   propertyId: number;
   tenantId: number;
+  floor?: string;
+  areaPyeong?: number;
   leaseType: LeaseType;
   deposit: number;
   monthlyRent: number;

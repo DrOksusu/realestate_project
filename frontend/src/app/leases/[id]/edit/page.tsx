@@ -13,6 +13,8 @@ import { Lease } from '@/types';
 import { leaseTypeLabels } from '@/lib/utils';
 
 interface LeaseForm {
+  floor: string;
+  areaPyeong: number;
   leaseType: string;
   deposit: number;
   monthlyRent: number;
@@ -55,6 +57,8 @@ export default function EditLeasePage() {
       };
 
       reset({
+        floor: leaseData.floor || '',
+        areaPyeong: Number(leaseData.areaPyeong) || 0,
         leaseType: leaseData.leaseType,
         deposit: Number(leaseData.deposit),
         monthlyRent: Number(leaseData.monthlyRent),
@@ -79,6 +83,8 @@ export default function EditLeasePage() {
 
     try {
       await leaseApi.update(leaseId, {
+        floor: data.floor || null,
+        areaPyeong: Number(data.areaPyeong) || null,
         leaseType: data.leaseType,
         deposit: Number(data.deposit),
         monthlyRent: Number(data.monthlyRent) || 0,
@@ -138,6 +144,23 @@ export default function EditLeasePage() {
               {error}
             </div>
           )}
+
+          <Card title="호실 정보">
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="층수"
+                placeholder="예: 1층, B1, 2-3층"
+                {...register('floor')}
+              />
+              <Input
+                label="전용면적 (평)"
+                type="number"
+                step="0.01"
+                placeholder="예: 10.5"
+                {...register('areaPyeong')}
+              />
+            </div>
+          </Card>
 
           <Card title="계약 유형">
             <Select

@@ -108,6 +108,10 @@ model Lease {
   tenantId        Int
   tenant          Tenant      @relation(fields: [tenantId], references: [id])
 
+  // 호실 정보
+  floor           String?     // 층수 (예: "1층", "B1", "2-3층")
+  areaPyeong      Decimal?    @db.Decimal(10, 2) // 전용면적 (평)
+
   // 계약 정보
   leaseType       LeaseType   // 전세/월세
   deposit         Decimal     @db.Decimal(15, 0) // 보증금

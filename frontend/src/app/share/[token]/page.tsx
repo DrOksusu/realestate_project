@@ -26,6 +26,8 @@ interface SharedProperty {
   currentValue: string | null;
   leases: Array<{
     id: number;
+    floor: string | null;
+    areaPyeong: string | null;
     leaseType: string;
     deposit: string;
     monthlyRent: string;
@@ -180,59 +182,60 @@ export default function SharedPropertyPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              {activeLeases.map((lease) => {
-                const monthlyRent = Number(lease.monthlyRent);
-                const managementFee = Number(lease.managementFee);
-                const vat = lease.hasVat ? Math.round((monthlyRent + managementFee) * 0.1) : 0;
-                const monthlyTotal = monthlyRent + managementFee + vat;
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left">
+                    <th className="py-3 px-2 font-medium text-gray-500">층수</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">면적(평)</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">임차인</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">유형</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">보증금</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">월세</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">관리비</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">부가세</th>
+                    <th className="py-3 px-2 font-medium text-gray-500 text-right">월 합계</th>
+                    <th className="py-3 px-2 font-medium text-gray-500">계약기간</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeLeases.map((lease) => {
+                    const monthlyRent = Number(lease.monthlyRent);
+                    const managementFee = Number(lease.managementFee);
+                    const vat = lease.hasVat ? Math.round((monthlyRent + managementFee) * 0.1) : 0;
+                    const monthlyTotal = monthlyRent + managementFee + vat;
 
-                return (
-                  <div key={lease.id} className="p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <div className="font-medium">{lease.tenant.name}</div>
-                        <div className="text-sm text-gray-500">
-                          {leaseTypeLabels[lease.leaseType as keyof typeof leaseTypeLabels]} · {formatDate(lease.startDate)} ~ {formatDate(lease.endDate)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {lease.leaseType === 'JEONSE' ? (
-                      <div className="text-right font-medium">
-                        보증금 {formatCurrencyMan(lease.deposit)}
-                      </div>
-                    ) : (
-                      <div className="mt-2 pt-2 border-t border-gray-200 space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">보증금</span>
-                          <span>{formatCurrencyMan(lease.deposit)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">월세</span>
-                          <span>{formatCurrency(monthlyRent)}</span>
-                        </div>
-                        {managementFee > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">관리비 별도</span>
-                            <span>{formatCurrency(managementFee)}</span>
-                          </div>
-                        )}
-                        {lease.hasVat && (
-                          <div className="flex justify-between text-orange-600">
-                            <span>부가세 (10%)</span>
-                            <span>{formatCurrency(vat)}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between font-bold pt-1 border-t border-gray-300">
-                          <span>월 합계</span>
-                          <span className="text-blue-600">{formatCurrency(monthlyTotal)}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                    return (
+                      <tr key={lease.id} className="border-b border-gray-100">
+                        <td className="py-3 px-2">{lease.floor || '-'}</td>
+                        <td className="py-3 px-2">{lease.areaPyeong ? `${lease.areaPyeong}평` : '-'}</td>
+                        <td className="py-3 px-2 font-medium">{lease.tenant.name}</td>
+                        <td className="py-3 px-2">
+                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                            {leaseTypeLabels[lease.leaseType as keyof typeof leaseTypeLabels]}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-right">{formatCurrencyMan(lease.deposit)}</td>
+                        <td className="py-3 px-2 text-right">
+                          {lease.leaseType === 'JEONSE' ? '-' : formatCurrency(monthlyRent)}
+                        </td>
+                        <td className="py-3 px-2 text-right">
+                          {lease.leaseType === 'JEONSE' ? '-' : formatCurrency(managementFee)}
+                        </td>
+                        <td className="py-3 px-2 text-right text-orange-600">
+                          {lease.hasVat ? formatCurrency(vat) : '-'}
+                        </td>
+                        <td className="py-3 px-2 text-right font-bold text-blue-600">
+                          {lease.leaseType === 'JEONSE' ? '-' : formatCurrency(monthlyTotal)}
+                        </td>
+                        <td className="py-3 px-2 text-xs text-gray-500 whitespace-nowrap">
+                          {formatDate(lease.startDate).slice(2)} ~ {formatDate(lease.endDate).slice(2)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

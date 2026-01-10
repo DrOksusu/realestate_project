@@ -81,6 +81,8 @@ export const createLease = async (req: Request, res: Response): Promise<void> =>
     const {
       propertyId,
       tenantId,
+      floor,
+      areaPyeong,
       leaseType,
       deposit,
       monthlyRent,
@@ -106,6 +108,8 @@ export const createLease = async (req: Request, res: Response): Promise<void> =>
       data: {
         propertyId,
         tenantId,
+        floor: floor || null,
+        areaPyeong: areaPyeong || null,
         leaseType,
         deposit,
         monthlyRent: monthlyRent || 0,
@@ -157,6 +161,8 @@ export const updateLease = async (req: Request, res: Response): Promise<void> =>
     }
 
     const {
+      floor,
+      areaPyeong,
       leaseType,
       deposit,
       monthlyRent,
@@ -171,6 +177,8 @@ export const updateLease = async (req: Request, res: Response): Promise<void> =>
     const lease = await prisma.lease.update({
       where: { id: leaseId },
       data: {
+        floor,
+        areaPyeong,
         leaseType,
         deposit,
         monthlyRent,
@@ -305,10 +313,13 @@ export const renewLease = async (req: Request, res: Response): Promise<void> => 
         data: {
           propertyId: existing.propertyId,
           tenantId: existing.tenantId,
+          floor: existing.floor,
+          areaPyeong: existing.areaPyeong,
           leaseType: existing.leaseType,
           deposit: deposit ?? existing.deposit,
           monthlyRent: monthlyRent ?? existing.monthlyRent,
           managementFee: managementFee ?? existing.managementFee,
+          hasVat: existing.hasVat,
           startDate: new Date(startDate),
           endDate: new Date(endDate),
           rentDueDay: rentDueDay ?? existing.rentDueDay,
