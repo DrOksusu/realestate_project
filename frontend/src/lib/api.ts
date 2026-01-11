@@ -25,16 +25,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('rememberMe');
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        window.location.href = '/login';
-      }
-    }
+    // 401 오류는 각 컴포넌트에서 처리하도록 함
+    // 자동 스토리지 삭제 및 리다이렉트 제거 (race condition 방지)
     return Promise.reject(error);
   }
 );

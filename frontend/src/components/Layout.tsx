@@ -27,7 +27,8 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     loadFromStorage();
-  }, [loadFromStorage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // 스토리지 로딩이 완료된 후에만 인증 체크
