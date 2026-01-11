@@ -41,28 +41,36 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   loadFromStorage: () => {
+    console.log('[Auth] loadFromStorage 시작', new Date().toISOString());
     if (typeof window !== 'undefined') {
       // localStorage 먼저 확인, 없으면 sessionStorage 확인
       let token = localStorage.getItem('token');
       let userStr = localStorage.getItem('user');
+      console.log('[Auth] localStorage 체크:', { hasToken: !!token, hasUser: !!userStr });
 
       if (!token || !userStr) {
         token = sessionStorage.getItem('token');
         userStr = sessionStorage.getItem('user');
+        console.log('[Auth] sessionStorage 체크:', { hasToken: !!token, hasUser: !!userStr });
       }
 
       if (token && userStr) {
         try {
           const user = JSON.parse(userStr);
+          console.log('[Auth] 인증 정보 복원 성공:', user.email);
           set({ user, token, isAuthenticated: true, isHydrated: true });
         } catch {
+          console.log('[Auth] 인증 정보 파싱 실패');
           set({ user: null, token: null, isAuthenticated: false, isHydrated: true });
         }
       } else {
+        console.log('[Auth] 저장된 인증 정보 없음');
         set({ isHydrated: true });
       }
     } else {
+      console.log('[Auth] window 객체 없음 (SSR)');
       set({ isHydrated: true });
     }
+    console.log('[Auth] loadFromStorage 완료', new Date().toISOString());
   },
 }));

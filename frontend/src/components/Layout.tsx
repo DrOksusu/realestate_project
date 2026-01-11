@@ -25,14 +25,19 @@ export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
   const { user, isAuthenticated, isHydrated, logout, loadFromStorage } = useAuthStore();
 
+  console.log('[Layout] 렌더링:', { isHydrated, isAuthenticated, pathname }, new Date().toISOString());
+
   useEffect(() => {
+    console.log('[Layout] useEffect - loadFromStorage 호출');
     loadFromStorage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    console.log('[Layout] useEffect - 인증 체크:', { isHydrated, isAuthenticated, pathname });
     // 스토리지 로딩이 완료된 후에만 인증 체크
     if (isHydrated && !isAuthenticated && pathname !== '/login' && pathname !== '/register') {
+      console.log('[Layout] → /login으로 이동');
       router.push('/login');
     }
   }, [isHydrated, isAuthenticated, pathname, router]);
