@@ -5,6 +5,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
   setAuth: (user: User, token: string, rememberMe?: boolean) => void;
   logout: () => void;
   loadFromStorage: () => void;
@@ -14,6 +15,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  isHydrated: false,
 
   setAuth: (user, token, rememberMe = true) => {
     if (typeof window !== 'undefined') {
@@ -52,11 +54,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (token && userStr) {
         try {
           const user = JSON.parse(userStr);
-          set({ user, token, isAuthenticated: true });
+          set({ user, token, isAuthenticated: true, isHydrated: true });
         } catch {
-          set({ user: null, token: null, isAuthenticated: false });
+          set({ user: null, token: null, isAuthenticated: false, isHydrated: true });
         }
+      } else {
+        set({ isHydrated: true });
       }
+    } else {
+      set({ isHydrated: true });
     }
   },
 }));

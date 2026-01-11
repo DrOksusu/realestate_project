@@ -23,22 +23,32 @@ export default function Layout({ children }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, logout, loadFromStorage } = useAuthStore();
+  const { user, isAuthenticated, isHydrated, logout, loadFromStorage } = useAuthStore();
 
   useEffect(() => {
     loadFromStorage();
   }, [loadFromStorage]);
 
   useEffect(() => {
-    if (!isAuthenticated && pathname !== '/login' && pathname !== '/register') {
+    // 스토리지 로딩이 완료된 후에만 인증 체크
+    if (isHydrated && !isAuthenticated && pathname !== '/login' && pathname !== '/register') {
       router.push('/login');
     }
-  }, [isAuthenticated, pathname, router]);
+  }, [isHydrated, isAuthenticated, pathname, router]);
 
   const handleLogout = () => {
     logout();
     router.push('/login');
   };
+
+  // 스토리지 로딩 중이거나 인증되지 않은 경우
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;
